@@ -1,20 +1,31 @@
-# Go version of twist-demo
+# Transfer
 
-rebuild by daginwu
+This example is to show how to use Twist to implement transfer money transaction.
 
-Start server
+## Usage
 
-```powershell
-go run main.go
+Install NPM modules via command in the following:
+
+```shell
+npm install
 ```
 
-Client test
+Then start service via npm command:
 
-```powershell
-npm run install
+```shell
+npm run server
+```
+
+## Demo
+
+There is a client to create a transaction to transfer money from `fred` to `armani` wallet.
+
+```shell
 npm run client
 ```
 
-## [log]Need to Repair
+There is faster way to execute client script:
 
-In TTC model it will stuck at stage II
+ ```shell
+ node ./client/client.js
+ ```

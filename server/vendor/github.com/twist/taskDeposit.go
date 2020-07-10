@@ -1,16 +1,16 @@
 package twist
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-
-	"encoding/json"
+	"strconv"
 
 	"github.com/gofiber/fiber"
 )
 
 func Deposit(ctx *fiber.Ctx) {
-
+	fmt.Println(ctx.Get("twist-phrase"))
 	switch ctx.Get("twist-phrase") {
 	case "confirm":
 		fmt.Println("===Deposit-Confirm===")
@@ -19,17 +19,19 @@ func Deposit(ctx *fiber.Ctx) {
 		}
 		// Getting task state
 		task := GetTask(ctx.Get("twist-task-id"))
-
+		fmt.Println(task)
 		// JSON FORM Read
 		var taskJSON map[string]interface{}
 		json.Unmarshal([]byte(task), &taskJSON)
-		taskState := taskJSON["payload"].(map[string]interface{})
+		taskStateString := taskJSON["payload"].(string)
+
+		var taskStateJSON map[string]interface{}
+		json.Unmarshal([]byte(taskStateString), &taskStateJSON)
 		// Execute to update database
 
-		DataBalance[taskState["user"].(string)] += taskState["balance"].(int)
-
+		DataBalance[taskStateJSON["user"].(string)] += int(taskStateJSON["balance"].(float64))
 		// Response Fiber!!
-		ctx.SendString("{user:" + taskState["user"].(string) + ",wallet:" + string(DataBalance["User"]) + "}")
+		ctx.SendString(`{"user":"` + taskStateJSON["user"].(string) + `","wallet":"` + strconv.Itoa(DataBalance[taskStateJSON["user"].(string)]) + `"}`)
 
 	case "cancel":
 		fmt.Println("===Deposit-Cancel===")
@@ -44,12 +46,15 @@ func Deposit(ctx *fiber.Ctx) {
 		// JSON FORM Read
 		var taskJSON map[string]interface{}
 		json.Unmarshal([]byte(task), &taskJSON)
-		taskState := taskJSON["payload"].(map[string]interface{})
+		taskStateString := taskJSON["payload"].(string)
+
+		var taskStateJSON map[string]interface{}
+		json.Unmarshal([]byte(taskStateString), &taskStateJSON)
 
 		// rollback if confirmed already
 		// Task need to be JSON
-		if taskState["status"] == "CONFIRMED" {
-			DataBalance[taskState["user"].(string)] -= taskState["balance"].(int)
+		if taskStateJSON["status"] == "CONFIRMED" {
+			DataBalance[taskStateJSON["user"].(string)] -= taskStateJSON["balance"].(int)
 		}
 
 		// Response clear
@@ -85,7 +90,8 @@ func Deposit(ctx *fiber.Ctx) {
 		}
 
 		// Twist lifecycle
-		taskResp := CreateTask("{actions:{confirm:{type: 'rest',method: 'post',uri: 'http://127.0.0.1:3000/deposit'},cancel:{type: 'rest',method: 'post',uri: 'http://127.0.0.1:3000/deposit'}},payload:" + "{User:" + string(taskState.User) + ",Balance:" + string(taskState.Balance) + "}" + ",timeout: 30000}")
+		taskResp := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"post","uri":"` + serviceHost + `/deposit"},"cancel":{"type":"rest","method":"post","uri":"` + serviceHost + `/deposit"}},"payload":"{\"user\":\"armani\",\"balance\":100}","timeout":30000}}`)
+		fmt.Println(taskResp)
 		ctx.SendString(taskResp)
 
 	}

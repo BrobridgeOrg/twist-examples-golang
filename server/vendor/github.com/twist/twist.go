@@ -2,6 +2,7 @@ package twist
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -10,10 +11,11 @@ import (
 	"github.com/gofiber/fiber"
 )
 
-var twistHost = "http://192.168.1.174:32529"
+var twistHost string = "http://192.168.1.174:32529"
+var serviceHost string = "http://192.168.1.150:3000"
 
 func Wallets(c *fiber.Ctx) {
-
+	fmt.Println("===Wallets===")
 	c.JSON(`
 	wallets:{
 		fred:{
@@ -31,6 +33,15 @@ type Task struct {
 	User    string `json:"user"`
 	Balance int    `json:"balance"`
 }
+type TaskState struct {
+	User    string `json:"user"`
+	Balance int    `json:"balance"`
+}
+
+type Payload struct {
+	User    string `json:"user"`
+	Balance int    `json:"balance"`
+}
 
 func CreateAccount(name string, initBalance int) {
 	DataBalance[name] = initBalance
@@ -44,6 +55,8 @@ var DataUser = make(map[string]bool)
 
 //
 func CreateTask(task string) string {
+	fmt.Println("==CreateTask==")
+	//fmt.Println(task)
 	client := &http.Client{}
 	var jsonStr = []byte(task)
 	req, err := http.NewRequest("POST", twistHost+"/api/v1/tasks", bytes.NewBuffer(jsonStr))
@@ -58,14 +71,16 @@ func CreateTask(task string) string {
 		log.Fatal(err)
 	}
 	body, _ := ioutil.ReadAll(resp.Body)
-
+	fmt.Println("------------CreateTask-Resp------------")
 	return string(body)
 }
 
 func GetTask(taskID string) string {
+	fmt.Println("==GetTask==")
+	fmt.Println(taskID)
 	client := &http.Client{}
 
-	req, err := http.NewRequest("GET", twistHost+" /api/v1/tasks/"+taskID, nil)
+	req, err := http.NewRequest("GET", twistHost+"/api/v1/tasks/"+taskID, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -78,11 +93,13 @@ func GetTask(taskID string) string {
 	}
 
 	body, _ := ioutil.ReadAll(resp.Body)
-
+	fmt.Println("------------GetTask-Resp------------")
 	return string(body)
 }
 
 func CancelTask(taskID string) string {
+	fmt.Println("==CancelTask==")
+	fmt.Println(taskID)
 	client := &http.Client{}
 
 	req, err := http.NewRequest("DELETE", twistHost+"/api/v1/tasks/"+taskID, nil)
@@ -97,6 +114,6 @@ func CancelTask(taskID string) string {
 		log.Fatal(err)
 	}
 	body, _ := ioutil.ReadAll(resp.Body)
-
+	fmt.Println("------------CancelTask-Resp------------")
 	return string(body)
 }

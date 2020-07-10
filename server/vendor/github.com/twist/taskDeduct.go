@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/gofiber/fiber"
 )
@@ -36,10 +37,11 @@ func DeductTry(ctx *fiber.Ctx) {
 	DataReserve[taskState.User] += taskState.Balance
 
 	// Twist lifecycle
-	taskResponse := CreateTask("{actions:{confirm:{type: 'rest',method: 'put',uri: 'http://172.20.10.10:3000/deduct'},cancel:{type: 'rest',method: 'delete',uri: 'http://172.20.10.10:3000/deduct'}},payload:{User:" + taskState.User + ",Balance:" + string(taskState.Balance) + "},timeout: 30000,}")
+	taskResponse := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"put","uri":"` + serviceHost + `/deduct"},"cancel":{"type":"rest","method":"delete","uri":"` + serviceHost + `/deduct"}},"payload":"{\"user\":\"` + taskState.User + `\",\"balance\":` + strconv.Itoa(taskState.Balance) + `}","timeout":30000}}`)
 
 	// Response
 	// how to use fiber write body
+
 	ctx.SendString(taskResponse)
 }
 
@@ -55,22 +57,25 @@ func DeductConfirm(ctx *fiber.Ctx) {
 	// JSON FORM Read
 	var taskJSON map[string]interface{}
 	json.Unmarshal([]byte(task), &taskJSON)
-	taskState := taskJSON["payload"].(map[string]interface{})
+	taskStateString := taskJSON["payload"].(string)
+
+	var taskStateJSON map[string]interface{}
+	json.Unmarshal([]byte(taskStateString), &taskStateJSON)
 
 	// Execute to update database
-	user := taskState["User"].(string)
-	DataBalance[user] -= taskState["balance"].(int)
-	DataReserve[user] -= taskState["balance"].(int)
+
+	user := taskStateJSON["user"].(string)
+	DataBalance[user] -= int(taskStateJSON["balance"].(float64))
+	DataReserve[user] -= int(taskStateJSON["balance"].(float64))
 
 	// Response
 	// how to use fiber write body
-
-	ctx.SendString("{user:" + taskState["User"].(string) + ",wallet:" + taskState["Balance"].(string) + "}")
+	fmt.Println("Need")
+	ctx.SendString(`{"user":"` + taskStateJSON["user"].(string) + `","wallet":"` + strconv.Itoa(int(taskStateJSON["balance"].(float64))) + `"}`)
 }
 
 func DeductCancel(ctx *fiber.Ctx) {
 	fmt.Println("===Deduct-Cancel===")
-	fmt.Println("===DeductCancel===")
 	if ctx.Get("twist-task-id") == "" {
 		log.Println("Required task ID")
 	}
