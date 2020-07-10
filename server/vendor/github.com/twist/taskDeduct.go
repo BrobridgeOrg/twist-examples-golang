@@ -86,14 +86,17 @@ func DeductCancel(ctx *fiber.Ctx) {
 	// JSON FORM Read
 	var taskJSON map[string]interface{}
 	json.Unmarshal([]byte(task), &taskJSON)
-	taskState := taskJSON["payload"].(map[string]interface{})
+	taskStateString := taskJSON["payload"].(string)
 
-	if taskState["status"] == "CONFIRMED" {
+	var taskStateJSON map[string]interface{}
+	json.Unmarshal([]byte(taskStateString), &taskStateJSON)
+
+	if taskStateJSON["status"] == "CONFIRMED" {
 		// Rollback if confirmed already
-		DataBalance[taskState["user"].(string)] += taskState["Balance"].(int)
+		DataBalance[taskStateJSON["user"].(string)] += int(taskStateJSON["balance"].(float64))
 	} else {
 		// Release reserved resources
-		DataReserve[taskState["user"].(string)] -= taskState["Balance"].(int)
+		DataReserve[taskStateJSON["user"].(string)] -= int(taskStateJSON["balance"].(float64))
 	}
 
 	ctx.SendString("")

@@ -54,7 +54,7 @@ func Deposit(ctx *fiber.Ctx) {
 		// rollback if confirmed already
 		// Task need to be JSON
 		if taskStateJSON["status"] == "CONFIRMED" {
-			DataBalance[taskStateJSON["user"].(string)] -= taskStateJSON["balance"].(int)
+			DataBalance[taskStateJSON["user"].(string)] -= int(taskStateJSON["balance"].(float64))
 		}
 
 		// Response clear
