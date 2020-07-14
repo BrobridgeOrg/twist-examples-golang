@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -28,7 +27,7 @@ func InitDepositAPI(r *gin.Engine) {
 			}
 
 			task := GetTask(c.Request.Header.Get("twist-task-id"))
-			fmt.Println(task)
+
 			// JSON FORM Read
 			var taskJSON map[string]interface{}
 			json.Unmarshal([]byte(task), &taskJSON)
@@ -80,7 +79,7 @@ func InitDepositAPI(r *gin.Engine) {
 			if datastore.DataUser[request.User] == false {
 				log.Fatal("User is not alive")
 			}
-			taskResp := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deposit"},"cancel":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deposit"}},"payload":"{\"user\":\"armani\",\"balance\":1000}","timeout":30000}}`)
+			taskResp := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deposit"},"cancel":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deposit"}},"payload":"{\"user\":\"armani\",\"balance\":100}","timeout":30000}}`)
 			c.Data(http.StatusOK, "application/json", []byte(taskResp))
 		}
 	})
