@@ -45,7 +45,7 @@ func InitDeductAPI(r *gin.Engine) {
 		datastore.DataReserve[request.User] += request.Balance
 
 		// Repair
-		jsonData := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"put","uri":"` + viper.GetString("host.serviceHost") + `/deduct"},"cancel":{"type":"rest","method":"delete","uri":"` + viper.GetString("host.serviceHost") + `/deduct"}},"payload":"{\"user\":\"` + request.User + `\",\"balance\":` + strconv.Itoa(request.Balance) + `}","timeout":30000}}`)
+		jsonData := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"put","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deduct"},"cancel":{"type":"rest","method":"delete","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deduct"}},"payload":"{\"user\":\"` + request.User + `\",\"balance\":` + strconv.Itoa(request.Balance) + `}","timeout":30000}}`)
 
 		c.Data(http.StatusOK, "application/json", []byte(jsonData))
 	})

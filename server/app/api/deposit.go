@@ -80,7 +80,7 @@ func InitDepositAPI(r *gin.Engine) {
 			if datastore.DataUser[request.User] == false {
 				log.Fatal("User is not alive")
 			}
-			taskResp := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/deposit"},"cancel":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/deposit"}},"payload":"{\"user\":\"armani\",\"balance\":100}","timeout":30000}}`)
+			taskResp := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deposit"},"cancel":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deposit"}},"payload":"{\"user\":\"armani\",\"balance\":1000}","timeout":30000}}`)
 			c.Data(http.StatusOK, "application/json", []byte(taskResp))
 		}
 	})
