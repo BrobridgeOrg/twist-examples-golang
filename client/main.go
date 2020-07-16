@@ -184,7 +184,7 @@ func registerTasks(txid string, taskJSON string) {
 	}
 	defer resp.Body.Close()
 	body, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println(string(body))
+
 	var rgstState registerState
 	json.Unmarshal([]byte(string(body)), &rgstState)
 	if rgstState.Success == "false" {
@@ -200,7 +200,7 @@ func doConfirm(txid string) {
 	fmt.Println("Entering CONFIRM phase for:" + txid)
 
 	client := &http.Client{}
-	var jsonStr = []byte(``)
+	var jsonStr = []byte(`{}`)
 	req, err := http.NewRequest("POST", viper.GetString("host.twistHost")+"/api/v1/transactions/"+txid, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		log.Fatal(err)
@@ -245,8 +245,6 @@ func doCancel(txid string) {
 	}
 	defer resp.Body.Close()
 
-	// body, _ := ioutil.ReadAll(resp.Body)
-	// fmt.Println(string(body))
 	fmt.Println("Transaction was canceled successfully")
 
 	if err != nil {

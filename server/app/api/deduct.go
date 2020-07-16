@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"twistserver/app/datastore"
@@ -28,17 +27,25 @@ func InitDeductAPI(r *gin.Engine) {
 		}
 
 		if request.User == "" {
-			log.Fatal("Need user")
+			c.JSON(http.StatusOK, gin.H{
+				"error": "Need User",
+			})
 		}
 		if request.Balance == 0 {
-			log.Fatal("Require balance")
+			c.JSON(http.StatusOK, gin.H{
+				"error": "Require balance",
+			})
 		}
 		if datastore.DataUser[request.User] == false {
-			log.Fatal("User is not alive")
+			c.JSON(http.StatusOK, gin.H{
+				"error": "User Not alive",
+			})
 		}
 
 		if datastore.DataBalance[request.User]-datastore.DataReserve[request.User] < request.Balance {
-			log.Fatal("Balance in wallet is not engough")
+			c.JSON(http.StatusOK, gin.H{
+				"error": "Balance in wallet is not engough",
+			})
 		}
 
 		// Do reserved
@@ -54,7 +61,9 @@ func InitDeductAPI(r *gin.Engine) {
 	r.PUT("/api/v1/deduct", func(c *gin.Context) {
 
 		if c.Request.Header.Get("twist-task-id") == "" {
-			log.Fatal("Need task ID")
+			c.JSON(http.StatusOK, gin.H{
+				"error": "Need taskID",
+			})
 		}
 		task := GetTask(c.Request.Header.Get("twist-task-id"))
 

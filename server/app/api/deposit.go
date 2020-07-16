@@ -2,7 +2,6 @@ package api
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"twistserver/app/datastore"
@@ -23,7 +22,9 @@ func InitDepositAPI(r *gin.Engine) {
 		switch c.Request.Header.Get("twist-phrase") {
 		case "confirm":
 			if c.Request.Header.Get("twist-task-id") == "" {
-				log.Fatal("Need task ID")
+				c.JSON(http.StatusOK, gin.H{
+					"error": "Need task ID",
+				})
 			}
 
 			task := GetTask(c.Request.Header.Get("twist-task-id"))
@@ -45,7 +46,9 @@ func InitDepositAPI(r *gin.Engine) {
 
 		case "cancel":
 			if c.Request.Header.Get("twist-task-id") == "" {
-				log.Fatal("Need task ID")
+				c.JSON(http.StatusOK, gin.H{
+					"error": "Need task ID",
+				})
 			}
 
 			task := GetTask(c.Request.Header.Get("twist-task-id"))
@@ -71,13 +74,19 @@ func InitDepositAPI(r *gin.Engine) {
 				return
 			}
 			if request.User == "" {
-				log.Fatal("Need user")
+				c.JSON(http.StatusOK, gin.H{
+					"error": "Need User",
+				})
 			}
 			if request.Balance < 0 {
-				log.Fatal("Require balance")
+				c.JSON(http.StatusOK, gin.H{
+					"error": "Require balance",
+				})
 			}
 			if datastore.DataUser[request.User] == false {
-				log.Fatal("User is not alive")
+				c.JSON(http.StatusOK, gin.H{
+					"error": "User Not Alive",
+				})
 			}
 			taskResp := CreateTask(`{"task":{"actions":{"confirm":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deposit"},"cancel":{"type":"rest","method":"post","uri":"` + viper.GetString("host.serviceHost") + `/api/v1/deposit"}},"payload":"{\"user\":\"armani\",\"balance\":100}","timeout":30000}}`)
 			c.Data(http.StatusOK, "application/json", []byte(taskResp))
