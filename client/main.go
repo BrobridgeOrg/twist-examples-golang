@@ -5,14 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/spf13/viper"
 )
 
-var twistHost string = "http://192.168.1.174:32529"
-var serviceHost string = "http://192.168.1.150:3000"
-
 func main() {
+
+	configHost()
+	fmt.Println(viper.GetString("host.serviceHost"))
+	fmt.Println(viper.GetString("host.twistHost"))
 
 	fmt.Println("===========ORIGINAL===========")
 	printWalletInfo()
@@ -35,9 +40,37 @@ func main() {
 	fmt.Println("*** Transaction was successfully processed ***")
 }
 
+type txID struct {
+	TransactionID string
+}
+
+type errorState struct {
+	Error string
+}
+
+type registerState struct {
+	Reason  string
+	Success string
+}
+
+func configHost() {
+	// From the environment
+	viper.SetEnvPrefix("TWIST_Example")
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	viper.AutomaticEnv()
+
+	// From config file
+	viper.SetConfigName("config")
+	viper.AddConfigPath("./")
+	viper.AddConfigPath("./config")
+
+	if err := viper.ReadInConfig(); err != nil {
+		log.Warn("No configuration file was loaded")
+	}
+}
 func printWalletInfo() {
 	client := &http.Client{}
-	req, err := http.NewRequest("GET", serviceHost+"/api/v1/wallets", nil)
+	req, err := http.NewRequest("GET", viper.GetString("host.serviceHost")+"/api/v1/wallets", nil)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -61,7 +94,7 @@ func printWalletInfo() {
 func createTransaction() string {
 	client := &http.Client{}
 	var jsonStr = []byte(`{"timeout":3000}`)
-	req, err := http.NewRequest("POST", twistHost+"/api/v1/transactions", bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", viper.GetString("host.twistHost")+"/api/v1/transactions", bytes.NewBuffer(jsonStr))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -82,24 +115,11 @@ func createTransaction() string {
 	return id.TransactionID
 }
 
-type txID struct {
-	TransactionID string
-}
-
-type errorState struct {
-	Error string
-}
-
-type registerState struct {
-	Reason  string
-	Success string
-}
-
 func deduct(txid string) string {
 	fmt.Println("[TRY]deduct 100 from fred")
 	client := &http.Client{}
 	var jsonStr = []byte(`{"user":"fred","balance":100}`)
-	req, err := http.NewRequest("POST", serviceHost+"/api/v1/deduct", bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", viper.GetString("host.serviceHost")+"/api/v1/deduct", bytes.NewBuffer(jsonStr))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -125,7 +145,7 @@ func deposit(txid string) string {
 	fmt.Println("[TRY]deposit 100 to armani's wallet")
 	client := &http.Client{}
 	var jsonStr = []byte(`{"user":"armani","balance":100}`)
-	req, err := http.NewRequest("POST", serviceHost+"/api/v1/deposit", bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", viper.GetString("host.serviceHost")+"/api/v1/deposit", bytes.NewBuffer(jsonStr))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -152,7 +172,7 @@ func registerTasks(txid string, taskJSON string) {
 	client := &http.Client{}
 	var jsonStr = []byte(`{"tasks":[` + taskJSON + `]}`)
 
-	req, err := http.NewRequest("PUT", twistHost+"/api/v1/transactions/"+txid, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("PUT", viper.GetString("host.twistHost")+"/api/v1/transactions/"+txid, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -181,7 +201,7 @@ func doConfirm(txid string) {
 
 	client := &http.Client{}
 	var jsonStr = []byte(``)
-	req, err := http.NewRequest("POST", twistHost+"/api/v1/transactions/"+txid, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("POST", viper.GetString("host.twistHost")+"/api/v1/transactions/"+txid, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -213,7 +233,7 @@ func doCancel(txid string) {
 
 	client := &http.Client{}
 	var jsonStr = []byte("")
-	req, err := http.NewRequest("DELETE", twistHost+"/api/v1/transactions/"+txid, bytes.NewBuffer(jsonStr))
+	req, err := http.NewRequest("DELETE", viper.GetString("host.twistHost")+"/api/v1/transactions/"+txid, bytes.NewBuffer(jsonStr))
 	if err != nil {
 		log.Fatal(err)
 	}

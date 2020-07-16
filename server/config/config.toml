@@ -1,5 +1,5 @@
 [host]
 twistHost = "http://192.168.1.174:32529"
-serviceHost = "http://192.168.1.150:3000"
+serviceHost = "http://192.168.1.110:3000"
 port = 3000
 
