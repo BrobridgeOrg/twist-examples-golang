@@ -27,23 +27,23 @@ func InitDeductAPI(r *gin.Engine) {
 		}
 
 		if request.User == "" {
-			c.JSON(http.StatusOK, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Need User",
 			})
 		}
 		if request.Balance == 0 {
-			c.JSON(http.StatusOK, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Require balance",
 			})
 		}
 		if datastore.DataUser[request.User] == false {
-			c.JSON(http.StatusOK, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "User Not alive",
 			})
 		}
 
 		if datastore.DataBalance[request.User]-datastore.DataReserve[request.User] < request.Balance {
-			c.JSON(http.StatusOK, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Balance in wallet is not engough",
 			})
 		}
@@ -61,7 +61,7 @@ func InitDeductAPI(r *gin.Engine) {
 	r.PUT("/api/v1/deduct", func(c *gin.Context) {
 
 		if c.Request.Header.Get("twist-task-id") == "" {
-			c.JSON(http.StatusOK, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Need taskID",
 			})
 		}
@@ -89,7 +89,9 @@ func InitDeductAPI(r *gin.Engine) {
 	// Cancel
 	r.DELETE("/api/v1/deduct", func(c *gin.Context) {
 		if c.Request.Header.Get("twist-task-id") == "" {
-
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Need ID",
+			})
 		}
 
 		task := GetTask(c.Request.Header.Get("twist-task-id"))

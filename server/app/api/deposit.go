@@ -22,7 +22,7 @@ func InitDepositAPI(r *gin.Engine) {
 		switch c.Request.Header.Get("twist-phrase") {
 		case "confirm":
 			if c.Request.Header.Get("twist-task-id") == "" {
-				c.JSON(http.StatusOK, gin.H{
+				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "Need task ID",
 				})
 			}
@@ -46,7 +46,7 @@ func InitDepositAPI(r *gin.Engine) {
 
 		case "cancel":
 			if c.Request.Header.Get("twist-task-id") == "" {
-				c.JSON(http.StatusOK, gin.H{
+				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "Need task ID",
 				})
 			}
@@ -74,17 +74,17 @@ func InitDepositAPI(r *gin.Engine) {
 				return
 			}
 			if request.User == "" {
-				c.JSON(http.StatusOK, gin.H{
+				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "Need User",
 				})
 			}
 			if request.Balance < 0 {
-				c.JSON(http.StatusOK, gin.H{
+				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "Require balance",
 				})
 			}
 			if datastore.DataUser[request.User] == false {
-				c.JSON(http.StatusOK, gin.H{
+				c.JSON(http.StatusBadRequest, gin.H{
 					"error": "User Not Alive",
 				})
 			}
